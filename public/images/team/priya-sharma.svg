@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="960" viewBox="0 0 800 960">
+  <rect width="800" height="960" fill="#1e293b"/>
+  <rect x="80" y="96" width="640" height="768" fill="none" stroke="#c9a84c" stroke-width="1" opacity="0.2"/>
+  <text x="400" y="460" fill="#c9a84c" font-size="28" font-weight="600" text-anchor="middle" font-family="Georgia,serif">Priya Sharma</text>
+<text x="400" y="500" fill="#c9a84c" font-size="20" font-weight="400" text-anchor="middle" font-family="Georgia,serif">Senior Associate</text>
+  <text x="400" y="816" fill="#c9a84c" font-size="11" font-weight="400" text-anchor="middle" font-family="monospace" opacity="0.5">Ashworth &amp; Partners Solicitors</text>
+</svg>
