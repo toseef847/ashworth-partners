@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Menu, Phone } from "lucide-react";
@@ -14,6 +15,8 @@ interface MobileNavProps {
 
 export default function MobileNav({ nav, phone }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
+  // Tracks client-side mount so createPortal is only called in the browser
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const drawerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -21,12 +24,16 @@ export default function MobileNav({ nav, phone }: MobileNavProps) {
   const close = () => setIsOpen(false);
   const open = () => setIsOpen(true);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Close on route change
   useEffect(() => {
     close();
   }, [pathname]);
 
-  // Trap focus & handle Escape
+  // Focus trap & Escape key
   useEffect(() => {
     if (!isOpen) return;
 
@@ -70,19 +77,12 @@ export default function MobileNav({ nav, phone }: MobileNavProps) {
     };
   }, [isOpen]);
 
-  return (
+  // The backdrop + drawer are portalled directly into document.body so they are
+  // never descendants of the sticky <header>, which has backdrop-filter applied.
+  // backdrop-filter creates a new containing block for position:fixed children,
+  // capping the drawer height to the header's 64px instead of the full viewport.
+  const overlay = (
     <>
-      <button
-        ref={triggerRef}
-        onClick={open}
-        aria-label="Open navigation menu"
-        aria-expanded={isOpen}
-        aria-controls="mobile-nav-drawer"
-        className="flex items-center justify-center w-10 h-10 rounded-md text-white hover:text-amber-300 transition-colors focus-visible:outline-2 focus-visible:outline-amber-300"
-      >
-        <Menu size={22} aria-hidden="true" />
-      </button>
-
       {/* Backdrop */}
       {isOpen && (
         <div
@@ -105,7 +105,7 @@ export default function MobileNav({ nav, phone }: MobileNavProps) {
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+        <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-white/10">
           <span className="font-display font-semibold text-white text-lg">
             Menu
           </span>
@@ -119,7 +119,7 @@ export default function MobileNav({ nav, phone }: MobileNavProps) {
         </div>
 
         {/* Nav Links */}
-        <nav aria-label="Mobile navigation" className="flex-1 overflow-y-auto py-6 px-6">
+        <nav aria-label="Mobile navigation" className="flex-1 min-h-0 overflow-y-auto py-6 px-6">
           <ul className="space-y-1">
             {nav.map((item) => (
               <li key={item.href}>
@@ -161,7 +161,7 @@ export default function MobileNav({ nav, phone }: MobileNavProps) {
         </nav>
 
         {/* CTA Footer */}
-        <div className="px-6 py-6 border-t border-white/10 space-y-3">
+        <div className="shrink-0 px-6 py-6 border-t border-white/10 space-y-3">
           <Link
             href="/contact"
             onClick={close}
@@ -178,6 +178,25 @@ export default function MobileNav({ nav, phone }: MobileNavProps) {
           </a>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Trigger button stays inside the header */}
+      <button
+        ref={triggerRef}
+        onClick={open}
+        aria-label="Open navigation menu"
+        aria-expanded={isOpen}
+        aria-controls="mobile-nav-drawer"
+        className="flex items-center justify-center w-10 h-10 rounded-md text-white hover:text-amber-300 transition-colors focus-visible:outline-2 focus-visible:outline-amber-300"
+      >
+        <Menu size={22} aria-hidden="true" />
+      </button>
+
+      {/* Backdrop + drawer portalled into document.body to escape backdrop-filter */}
+      {mounted && createPortal(overlay, document.body)}
     </>
   );
 }
